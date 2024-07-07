@@ -8,41 +8,50 @@ import java.util.List;
 
 public class ClientCrudService {
 
-    private final SessionFactory sessionFactory;
+    private SessionFactory sessionFactory;
 
     public ClientCrudService() {
-        Configuration configuration = new Configuration().configure();
-        sessionFactory = configuration.buildSessionFactory();
+        sessionFactory = new Configuration().configure().buildSessionFactory();
     }
 
-    public Client save(Client client) {
+    public void create(Client client) {
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
         session.save(client);
         transaction.commit();
         session.close();
-        return client;
     }
 
-    public Client findById(Long id) {
+    public Client read(Long id) {
         Session session = sessionFactory.openSession();
         Client client = session.get(Client.class, id);
         session.close();
         return client;
     }
 
-    public List<Client> findAll() {
-        Session session = sessionFactory.openSession();
-        List<Client> clients = session.createQuery("FROM Client", Client.class).list();
-        session.close();
-        return clients;
-    }
-
-    public void delete(Client client) {
+    public void update(Client client) {
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
-        session.delete(client);
+        session.update(client);
         transaction.commit();
         session.close();
+    }
+
+    public void delete(Long id) {
+        Session session = sessionFactory.openSession();
+        Transaction transaction = session.beginTransaction();
+        Client client = session.get(Client.class, id);
+        if (client != null) {
+            session.delete(client);
+        }
+        transaction.commit();
+        session.close();
+    }
+
+    public List<Client> getAll() {
+        Session session = sessionFactory.openSession();
+        List<Client> clients = session.createQuery("from Client", Client.class).list();
+        session.close();
+        return clients;
     }
 }

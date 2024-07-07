@@ -6,44 +6,52 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 import java.util.List;
-
 public class PlanetCrudService {
 
-    private final SessionFactory sessionFactory;
+    private SessionFactory sessionFactory;
 
     public PlanetCrudService() {
-        Configuration configuration = new Configuration().configure();
-        sessionFactory = configuration.buildSessionFactory();
+        sessionFactory = new Configuration().configure().buildSessionFactory();
     }
 
-    public Planet save(Planet planet) {
+    public void create(Planet planet) {
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
         session.save(planet);
         transaction.commit();
         session.close();
-        return planet;
     }
 
-    public Planet findById(String id) {
+    public Planet read(String id) {
         Session session = sessionFactory.openSession();
         Planet planet = session.get(Planet.class, id);
         session.close();
         return planet;
     }
 
-    public List<Planet> findAll() {
-        Session session = sessionFactory.openSession();
-        List<Planet> planets = session.createQuery("FROM Planet", Planet.class).list();
-        session.close();
-        return planets;
-    }
-
-    public void delete(Planet planet) {
+    public void update(Planet planet) {
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
-        session.delete(planet);
+        session.update(planet);
         transaction.commit();
         session.close();
+    }
+
+    public void delete(String id) {
+        Session session = sessionFactory.openSession();
+        Transaction transaction = session.beginTransaction();
+        Planet planet = session.get(Planet.class, id);
+        if (planet != null) {
+            session.delete(planet);
+        }
+        transaction.commit();
+        session.close();
+    }
+
+    public List<Planet> getAll() {
+        Session session = sessionFactory.openSession();
+        List<Planet> planets = session.createQuery("from Planet", Planet.class).list();
+        session.close();
+        return planets;
     }
 }

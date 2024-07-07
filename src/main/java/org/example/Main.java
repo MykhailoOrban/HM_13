@@ -1,43 +1,59 @@
 package org.example;
 
-import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
         ClientCrudService clientService = new ClientCrudService();
         PlanetCrudService planetService = new PlanetCrudService();
+        TicketCrudService ticketService = new TicketCrudService();
 
-        // Test Client CRUD operations
+        // Create and read a Client
         Client client = new Client();
-        client.setName("Client 1");
-        clientService.save(client);
-        System.out.println("Saved client: " + client);
+        client.setName("New Client");
+        clientService.create(client);
+        Client savedClient = clientService.read(client.getId());
+        System.out.println("Saved Client: " + savedClient.getName());
 
-        Client retrievedClient = clientService.findById(client.getId());
-        System.out.println("Retrieved client: " + retrievedClient);
-
-        List<Client> clients = clientService.findAll();
-        System.out.println("All clients:");
-        clients.forEach(System.out::println);
-
-        clientService.delete(retrievedClient);
-        System.out.println("Client deleted.");
-
-        // Test Planet CRUD operations
+        // Create and read a Planet
         Planet planet = new Planet();
-        planet.setId("JUP");
-        planet.setName("Jupiter");
-        planetService.save(planet);
-        System.out.println("Saved planet: " + planet);
+        planet.setId("NEP");
+        planet.setName("Neptune");
+        planetService.create(planet);
+        Planet savedPlanet = planetService.read(planet.getId());
+        System.out.println("Saved Planet: " + savedPlanet.getName());
 
-        Planet retrievedPlanet = planetService.findById(planet.getId());
-        System.out.println("Retrieved planet: " + retrievedPlanet);
+        // Create a Ticket
+        Ticket ticket = new Ticket();
+        ticket.setClient(savedClient);
+        ticket.setFromPlanet(planetService.read("EARTH"));
+        ticket.setToPlanet(savedPlanet);
 
-        List<Planet> planets = planetService.findAll();
-        System.out.println("All planets:");
-        planets.forEach(System.out::println);
+        try {
+            ticketService.create(ticket);
+            Ticket savedTicket = ticketService.read(ticket.getId());
+            System.out.println("Saved Ticket: " + savedTicket.getId());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Failed to create ticket: " + e.getMessage());
+        }
 
-        planetService.delete(retrievedPlanet);
-        System.out.println("Planet deleted.");
+        // Test invalid ticket creation
+        try {
+            Ticket invalidTicket = new Ticket();
+            invalidTicket.setClient(null);
+            invalidTicket.setFromPlanet(null);
+            invalidTicket.setToPlanet(null);
+            ticketService.create(invalidTicket);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Failed to create invalid ticket: " + e.getMessage());
+        }
+
+        // Update and delete a Ticket
+        ticket.setToPlanet(planetService.read("VEN"));
+        ticketService.update(ticket);
+        ticketService.delete(ticket.getId());
+
+        // Clean up created client and planet
+        clientService.delete(savedClient.getId());
+        planetService.delete(savedPlanet.getId());
     }
 }
